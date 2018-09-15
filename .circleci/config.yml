@@ -3,7 +3,7 @@ jobs:
   build:
     docker:
       - image: circleci/golang:1.11
-    working_directory: ~/github.com/gopherpun/redis_queue
+    working_directory: ~/github.com/letsgocamping/location
     steps:
       - checkout
       - run: go test -race
