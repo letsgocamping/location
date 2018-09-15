@@ -1,5 +1,12 @@
 version: 2
 jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.11
+    working_directory: ~/github.com/gopherpun/redis_queue
+    steps:
+      - checkout
+      - run: go test -race
   deploy:
     machine:
       enabled: true
@@ -8,3 +15,16 @@ jobs:
           name: Deploy Over SSH
           command: |
             ssh $SSH_USER@$SSH_HOST "~/ops/deploy_scripts/location_deploy.sh"
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+
