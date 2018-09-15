@@ -1,0 +1,10 @@
+version: 2
+jobs:
+  deploy:
+    machine:
+      enabled: true
+    steps:
+      - run:
+          name: Deploy Over SSH
+          command: |
+            ssh $SSH_USER@$SSH_HOST "~/ops/deploy_scripts/location_deploy.sh"
