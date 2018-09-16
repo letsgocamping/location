@@ -32,10 +32,11 @@ type midpointBody struct {
 }
 
 type midpointRes struct {
-	Lat   float64 `json:"lat"`
-	Long  float64 `json:"lon"`
-	State string  `json:"state"`
-	Parks string  `json:"parks"`
+	Lat    float64     `json:"lat"`
+	Long   float64     `json:"lon"`
+	State  string      `json:"state"`
+	Parks  string      `json:"parks"`
+	Cities [][]float64 `json:"cities"`
 }
 
 type errorRes struct {
@@ -51,15 +52,15 @@ func midpointHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ll := getLatAndLong(body.Cities)
+	cities := getLatAndLong(body.Cities)
 
-	lat, lng := getLatLngCenter(ll)
+	lat, lng := getLatLngCenter(cities)
 
 	state := findState(lat, lng)
 
 	parks := getParks(state)
 
-	res, err := json.Marshal(midpointRes{lat, lng, state, parks})
+	res, err := json.Marshal(midpointRes{lat, lng, state, parks, cities})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
