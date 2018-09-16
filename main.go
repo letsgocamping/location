@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 )
@@ -23,7 +24,7 @@ func main() {
 	// Hello world, the web server
 
 	http.HandleFunc("/api/location_service/midpoint", midpointHandler)
-	http.ListenAndServe(":8080", nil)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 type midpointBody struct {
