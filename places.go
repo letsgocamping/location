@@ -31,7 +31,11 @@ func getLatAndLong(cities [][]string) [][]float64 {
 			city := v[0]
 			state := v[1]
 
-			res, _ := http.Get(formatUrl(city, state))
+			res, err := http.Get(formatUrl(city, state))
+
+			if err != nil {
+				fmt.Println(err)
+			}
 
 			j, _ := parsePlacesJson(res.Body)
 
