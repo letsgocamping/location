@@ -37,7 +37,11 @@ func getLatAndLong(cities [][]string) [][]float64 {
 				fmt.Println(err)
 			}
 
-			j, _ := parsePlacesJson(res.Body)
+			j, err := parsePlacesJson(res.Body)
+
+			if err != nil {
+				fmt.Println(err)
+			}
 
 			lat := j.Results[0].Geometry.Location.Lat
 			lng := j.Results[0].Geometry.Location.Long

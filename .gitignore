@@ -1,4 +1,6 @@
 location
+main
+*.zip
 .env
 
 .*.sw?

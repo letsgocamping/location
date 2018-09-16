@@ -1,30 +1,11 @@
 package main
 
 import (
-	"encoding/json"
-	"io"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"os"
+	"github.com/aws/aws-lambda-go/lambda"
 )
-
-var (
-	port string
-)
-
-func init() {
-	port = os.Getenv("LOCATION_SERVICE_PORT")
-	if port == "" {
-		port = ":8080"
-	}
-}
 
 func main() {
-	// Hello world, the web server
-
-	http.HandleFunc("/api/location_service/midpoint", midpointHandler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	lambda.Start(midpointHandler)
 }
 
 type midpointBody struct {
@@ -32,6 +13,11 @@ type midpointBody struct {
 }
 
 type midpointRes struct {
+	StatusCode int  `json:"statusCode"`
+	Body       body `json:"body"`
+}
+
+type body struct {
 	Lat    float64     `json:"lat"`
 	Long   float64     `json:"lon"`
 	State  string      `json:"state"`
@@ -43,16 +29,8 @@ type errorRes struct {
 	Error string `json:"error"`
 }
 
-func midpointHandler(w http.ResponseWriter, req *http.Request) {
-
-	body, err := parseJson(req.Body)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	cities := getLatAndLong(body.Cities)
+func midpointHandler(req midpointBody) (midpointRes, error) {
+	cities := getLatAndLong(req.Cities)
 
 	lat, lng := getLatLngCenter(cities)
 
@@ -60,29 +38,7 @@ func midpointHandler(w http.ResponseWriter, req *http.Request) {
 
 	parks := getParks(state)
 
-	res, err := json.Marshal(midpointRes{lat, lng, state, parks, cities})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	res := midpointRes{200, body{lat, lng, state, parks, cities}}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(res)
-}
-
-func parseJson(body io.ReadCloser) (midpointBody, error) {
-	var request midpointBody
-	buf, err := ioutil.ReadAll(body)
-	defer body.Close()
-
-	if err != nil {
-		return midpointBody{}, err
-	}
-
-	err = json.Unmarshal(buf, &request)
-	if err != nil {
-		return midpointBody{}, err
-	}
-
-	return request, nil
+	return res, nil
 }
