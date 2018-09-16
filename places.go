@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 )
@@ -80,14 +81,49 @@ func parsePlacesJson(body io.ReadCloser) (placesRes, error) {
 }
 
 type stateRes struct {
-	plusCode struct {
-		compoundCode string `json:"compound_code"`
-	}
+	PlusCode struct {
+		CompoundCode string `json:"compound_code"`
+	} `json:"plus_code"`
 }
 
 func findState(lat, lng float64) string {
 
 	res, _ := http.Get(formatStateUrl(lat, lng))
+
+	x, _ := parseState(res.Body)
+
+	state := getState(x.PlusCode.CompoundCode)
+
+	return state
+}
+
+func getState(txt string) string {
+	var re = regexp.MustCompile(`(?m), ..,`)
+
+	match := re.Find([]byte(txt))
+
+	str := string(match)
+
+	str = strings.Trim(str, ",")
+	str = strings.Trim(str, " ")
+	return string(str)
+}
+
+func parseState(body io.ReadCloser) (stateRes, error) {
+	var request stateRes
+	buf, err := ioutil.ReadAll(body)
+	defer body.Close()
+
+	if err != nil {
+		return stateRes{}, err
+	}
+
+	err = json.Unmarshal(buf, &request)
+	if err != nil {
+		return stateRes{}, err
+	}
+
+	return request, nil
 
 }
 
