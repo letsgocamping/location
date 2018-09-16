@@ -1,10 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
@@ -35,27 +31,16 @@ type errorRes struct {
 	Error string `json:"error"`
 }
 
-func midpointHandler(req midpointBody) (events.APIGatewayProxyResponse, error) {
-	headers := make(map[string]string)
-
+func midpointHandler(req midpointBody) (body, error) {
 	cities := getLatAndLong(req.Cities)
 
 	lat, lng := getLatLngCenter(cities)
-	headers["Location"] = fmt.Sprintf("%f, %f", lat, lng)
 
 	state := findState(lat, lng)
 
 	parks := getParks(state)
 
-	Body := body{lat, lng, state, parks, cities}
-
-	bodyJson, err := json.Marshal(Body)
-	if err != nil {
-		fmt.Println(err)
-		return events.APIGatewayProxyResponse{}, err
-	}
-
-	res := events.APIGatewayProxyResponse{Headers: headers, IsBase64Encoded: false, StatusCode: 200, Body: string(bodyJson)}
+	res := body{lat, lng, state, parks, cities}
 
 	return res, nil
 }
